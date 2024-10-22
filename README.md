@@ -30,6 +30,6 @@ jobs:
 
 Now you can check the actions tab and see if the piepline works!
 
-The possibilities are infinite, check out [the reference docs](https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idneeds) for a complete overview of the workflows syntax.
+The possibilities are infinite, check out [the reference docs](https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions) for a complete overview of the workflows syntax.
 
 Let's see something slightly more complex in this open source repo: [Example #2](https://github.com/mbianchidev/klab-cli/pull/232)
