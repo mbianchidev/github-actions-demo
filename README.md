@@ -1,7 +1,7 @@
 # github-actions-demo
 GitHub actions demo!
 
-For a guided experience you can just navigate to [https://github.com/mbianchidev/github-actions-demo/actions/new](https://github.com/mbianchidev/github-actions-demo/actions/new) reachable from the actions tab when you don't have any wofklows set.
+For a guided experience you can just navigate to [this page](https://github.com/mbianchidev/github-actions-demo/actions/new) - also reachable from the actions tab when you don't have any wofklows set.
 
 In our case, for educational purpose we are going for a good old fashioned fully manual setup!
 
