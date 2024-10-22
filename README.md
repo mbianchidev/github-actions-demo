@@ -1,6 +1,10 @@
 # github-actions-demo
 GitHub actions demo!
 
+For a guided experience you can just navigate to [https://github.com/mbianchidev/github-actions-demo/actions/new](https://github.com/mbianchidev/github-actions-demo/actions/new) reachable from the actions tab when you don't have any wofklows set.
+
+In our case, for educational purpose we are going for a good old fashioned fully manual setup!
+
 Click on "Add file", then "create new file" and type `.github/workflows/demo-pipeline.yml`.
 
 In the file, copy paste the following workflow:
@@ -26,4 +30,4 @@ jobs:
 
 Now you can check the actions tab and see if the piepline works!
 
-Now let's see something slightly more complex: [Example #2](https://github.com/mbianchidev/klab-cli/pull/232)
+Let's see something slightly more complex in this open source repo: [Example #2](https://github.com/mbianchidev/klab-cli/pull/232)
