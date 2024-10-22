@@ -20,7 +20,8 @@ jobs:
     steps:
     - name: Check Nodejs and NPM version
       run: |
-        node --version && npm --version
+        node --version 
+        npm --version
 ```
 
 Now you can check the actions tab and see if the piepline works!
