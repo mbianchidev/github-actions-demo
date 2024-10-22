@@ -25,3 +25,5 @@ jobs:
 ```
 
 Now you can check the actions tab and see if the piepline works!
+
+Now let's see something slightly more complex: [Example #2](https://github.com/mbianchidev/klab-cli/pull/232)
