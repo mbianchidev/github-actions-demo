@@ -53,7 +53,7 @@ on:
 
   # Trigger on a schedule (cron syntax)
   schedule:
-    - cron: "0 0 * * *" # Daily at midnight UTC
+    - cron: "0 0 1 1 *" # Yearly on January 1st at midnight UTC while for example tis one "0 0 * * *" runs daily at midnight UTC
 
 # Environment variables available to all jobs
 env:
