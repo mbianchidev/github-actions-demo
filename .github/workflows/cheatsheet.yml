@@ -363,7 +363,7 @@ jobs:
 
   # Reusable workflows are reusable jobs
   reusable-job:
-    uses: austenstone/actions-playground/.github/workflows/reusable-called.yml@main
+    uses: mbianchidev/actions-playground/.github/workflows/reusable-called.yml@main
     with:
       username: "GitHub Actions User"
     secrets: inherit # You must pass secrets explicitly to reusable workflows
