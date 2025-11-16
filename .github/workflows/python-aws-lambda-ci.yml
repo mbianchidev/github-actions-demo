@@ -1,0 +1,161 @@
+name: Continuous Integration 🛠️
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  PYTHON_VERSION: 3.11
+  POETRY_VERSION: 1.6.1
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code 📦
+        uses: actions/checkout@v3
+
+      - name: Set up Python 🐍
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry 💼
+        run: pip install poetry==${{ env.POETRY_VERSION }}
+
+      - name: Cache Dependencies 🗄️
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+            ${{ runner.os }}-
+
+      - name: Install Dependencies 💾
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: poetry install
+
+      - name: 🎨 Run Black Code Formatter
+        run: poetry run black --check --diff .
+
+      - name: 📖 Run Flake8 Linter
+        run: poetry run flake8 src tests
+
+      - name: 📟 Run MyPy Type Checker
+        run: poetry run mypy src tests
+
+      - name: 🧹 Run isort
+        run: poetry run isort --check-only --diff .
+
+      - name: 🔍 Run Pylint Code Analyzer
+        run: poetry run pylint src tests
+
+  #      - name: 🧪 Run Pytest
+  #        run: poetry run pytest --cov=app
+
+  #      - name: 📊 Generate Coverage Report
+  #        run: poetry run coverage xml
+
+  build:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code 📦
+        uses: actions/checkout@v3
+
+      - name: Set up Python 🐍
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry 💼
+        run: pip install poetry==${{ env.POETRY_VERSION }}
+
+      - name: Build Lambda Function 🏗️
+        run: |
+          mkdir -p dist/function
+          cp -r src/* dist/function/
+          cd dist/function
+          zip -r ../function.zip .
+          cd ..
+          rm -rf ./function
+
+      - name: Build Lambda Layer 🧩
+        run: |
+          mkdir -p dist/layer/python
+          poetry export -f requirements.txt --output requirements.txt --without-hashes --without dev
+          pip install -r requirements.txt --no-deps -t dist/layer/python
+          cd dist/layer
+          zip -r ../layer.zip .
+          cd ..
+          rm -rf ./layer
+
+      - name: Upload Built Artifacts 📤
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist/
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    env:
+      LAMBDA_NAME: dev-datapoints-uploader
+      LAYER_NAME: dev-datapoints-uploader-layer
+
+    steps:
+      - name: Download Built Artifacts 📥
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: ./dist
+
+      - name: Configure AWS Credentials 🔐
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::071941506442:role/githubActionCodeDeploy
+          aws-region: us-east-1
+
+      - name: Deploy to AWS Lambda 🚀
+        run: aws lambda update-function-code --function-name ${{ env.LAMBDA_NAME }} --zip-file fileb://dist/function.zip
+
+      - name: Publish a new version of the Lambda Layer 🎛️
+        run: |
+          LAYER_VERSION=$(aws lambda publish-layer-version \
+          --layer-name ${{ env.LAYER_NAME }} \
+          --zip-file fileb://dist/layer.zip \
+          --compatible-runtimes python${{ env.PYTHON_VERSION }} \
+          --compatible-architectures x86_64 \
+          --query Version \
+          --output text)
+          echo "LAYER_VERSION=$LAYER_VERSION" >> $GITHUB_ENV
+
+      - name: Update Lambda Configuration to use New Layer Version 🔗
+        run: |
+          aws lambda update-function-configuration \
+          --function-name ${{ env.LAMBDA_NAME }} \
+          --layers arn:aws:lambda:us-east-1:071941506442:layer:${{ env.LAYER_NAME }}:$LAYER_VERSION
+          aws lambda wait function-updated \
+          --function-name ${{ env.LAMBDA_NAME }}
+
+      - name: Delete Previous Lambda Layer Version 🗑️
+        if: env.LAYER_VERSION > 1
+        run: |
+          PREVIOUS_LAYER_VERSION=$((LAYER_VERSION - 1))
+
+          # Delete the previous layer version
+          aws lambda delete-layer-version \
+          --layer-name ${{ env.LAYER_NAME }} \
+          --version-number $PREVIOUS_LAYER_VERSION
