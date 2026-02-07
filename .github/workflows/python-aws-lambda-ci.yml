@@ -31,16 +31,6 @@ jobs:
       - name: Install Poetry 💼
         run: pip install poetry==${{ env.POETRY_VERSION }}
 
-      - name: Cache Dependencies 🗄️
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-            ${{ runner.os }}-
-
       - name: Install Dependencies 💾
         run: poetry install
 
