@@ -20,28 +20,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code 📦
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python 🐍
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Poetry 💼
         run: pip install poetry==${{ env.POETRY_VERSION }}
 
-      - name: Cache Dependencies 🗄️
-        id: cache
-        uses: actions/cache@v3
+      - name: Cache Poetry Dependencies 🗄️
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pypoetry
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-
-            ${{ runner.os }}-
 
       - name: Install Dependencies 💾
-        if: steps.cache.outputs.cache-hit != 'true'
         run: poetry install
 
       - name: 🎨 Run Black Code Formatter
@@ -71,15 +68,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code 📦
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python 🐍
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Poetry 💼
         run: pip install poetry==${{ env.POETRY_VERSION }}
+
+      - name: Cache Poetry Dependencies 🗄️
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
 
       - name: Build Lambda Function 🏗️
         run: |
@@ -101,7 +106,7 @@ jobs:
           rm -rf ./layer
 
       - name: Upload Built Artifacts 📤
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
@@ -117,13 +122,13 @@ jobs:
 
     steps:
       - name: Download Built Artifacts 📥
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: ./dist
 
       - name: Configure AWS Credentials 🔐
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::071941506442:role/githubActionCodeDeploy
           aws-region: us-east-1
